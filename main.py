@@ -3,7 +3,6 @@
     Created time 18.03.2022 / dd.mm.yyyy
 """
 
-
 def print_hi(name):
 
     print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
