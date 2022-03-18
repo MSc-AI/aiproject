@@ -2,11 +2,10 @@
     Created by Software Engineer Isa Kulaksiz
     Created time 18.03.2022 / dd.mm.yyyy
 """
-
-def print_hi(name):
-
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
-
+from TestData import FileOperations
 
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    temp_data = FileOperations().read_file()
+    if temp_data.read_file() == "":
+        print("test_data.csv is empty !")
+
