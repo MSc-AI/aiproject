@@ -1,8 +1,9 @@
+import numpy as np
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
-from sklearn.model_selection import train_test_split
-import pandas as pd
 from sklearn.tree import DecisionTreeClassifier
-
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 import ReadCSV
 
 """"
@@ -16,6 +17,8 @@ import ReadCSV
 def validation(self):
     df = ReadCSV.FileOperations.read_train_file(self)
     df_test = ReadCSV.FileOperations.read_test_file(self)
+
+
 
     print(df.dtypes)
     df_copy_test = df.copy()
@@ -129,6 +132,18 @@ def validation(self):
 
     y_train = y_train[0:len(x_test):]
 
+    # Creating the dataset
+    column_name = ['Hospital_code', 'patientid', 'Department',
+                   'Age', 'Severity of Illness', 'Type of Admission']
+
+    data = x_train
+
+    x = np.hstack(x_train)
+    y = np.array([50, 200, 1000, 1500, 2000, 2500])
+
+    plt.bar(x, y)
+    plt.show()
+
     """x_train, x_val, y_train, y_val = train_test_split(x_train, y_train,
                                                       test_size=1.0,
                                                       shuffle=False)"""
@@ -139,5 +154,8 @@ def validation(self):
     print('\n' + "Confusion Matrix: " + '\n', confusion_matrix(y_train, prediction))
     print("Report :" + '\n', classification_report(y_train, prediction))
     print(model)
+
+
+
 
     return df
