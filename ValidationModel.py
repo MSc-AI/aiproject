@@ -1,8 +1,6 @@
-import numpy as np
-import pandas as pd
-from self import self
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.model_selection import train_test_split
+import pandas as pd
 from sklearn.tree import DecisionTreeClassifier
 
 import ReadCSV
@@ -13,6 +11,7 @@ import ReadCSV
 """
 
 "The validation part is selected from the train data set."
+
 
 def validation(self):
     df = ReadCSV.FileOperations.read_train_file(self)
@@ -76,8 +75,9 @@ def validation(self):
     df_copy_test = df_copy_test.replace(['61-70'], '10')
     # print(df_copy_test["Stay"].value_counts())
 
-    x_train = df_copy_test[["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission"]]
-    y_train = df_copy_test[["Stay"]]
+    x_train = df_copy_test[
+        ["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission"]]
+    y_train = df_copy_test["Stay"].values
 
     print("TEST DATA")
     print(df_test.dtypes)
@@ -121,10 +121,17 @@ def validation(self):
     df_copy_test_data = df_copy_test_data.replace(['91-100'], '9')
     print(df_copy_test_data["Age"].value_counts())
 
-    x_test = df_copy_test_data[["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission"]]
+    x_test = df_copy_test_data[
+        ["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission"]]
 
     dt = DecisionTreeClassifier(criterion="entropy", random_state=1234, max_depth=4, min_samples_split=4)
     model = dt.fit(x_train, y_train)
+
+    y_train = y_train[0:len(x_test):]
+
+    """x_train, x_val, y_train, y_val = train_test_split(x_train, y_train,
+                                                      test_size=1.0,
+                                                      shuffle=False)"""
 
     prediction = dt.predict(x_test)
     accuracy = accuracy_score(y_train, prediction)
@@ -132,6 +139,5 @@ def validation(self):
     print('\n' + "Confusion Matrix: " + '\n', confusion_matrix(y_train, prediction))
     print("Report :" + '\n', classification_report(y_train, prediction))
     print(model)
-
 
     return df
