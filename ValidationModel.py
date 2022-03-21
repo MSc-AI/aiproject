@@ -19,19 +19,21 @@ def validation(self):
     df = ReadCSV.FileOperations.read_train_file(self)
     df_test = ReadCSV.FileOperations.read_test_file(self)
 
-
     ## feature selection
-    print(df.dtypes)
-    df_copy_test = df[["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission", "Stay"]].copy()
-    print("TRAIN DATA")
+    # print(df.dtypes)
+    df_copy_test = df[
+        ["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission", "Stay"]].copy()
+    print(df_copy_test.value_counts())
+    # print("TRAIN DATA")
+    print(df_copy_test.head(20))
     # 0 ->  gynecology / 1 -> anesthesia / 2-> radiotherapy / 3 -> TB & Chest disease / 4 -> surgery
-    print(df["Department"].value_counts())
+    # print(df["Department"].value_counts())
     df_copy_test = df_copy_test.replace(['gynecology'], '0')
     df_copy_test = df_copy_test.replace(['anesthesia'], '1')
     df_copy_test = df_copy_test.replace(['radiotherapy'], '2')
     df_copy_test = df_copy_test.replace(['TB & Chest disease'], '3')
     df_copy_test = df_copy_test.replace(['surgery'], '4')
-    print(df_copy_test["Department"].value_counts())
+    # print(df_copy_test["Department"].value_counts())
 
     # 0 -> Moderate / 1 -> Minor / 2 -> Extreme / 3 -> Severity of Illness
     print(df["Severity of Illness"].value_counts())
@@ -41,11 +43,11 @@ def validation(self):
     print(df_copy_test["Severity of Illness"].value_counts())
 
     # 0 -> Trauma / 1 -> Emergency / 2 -> Urgent
-    print(df["Type of Admission"].value_counts())
+    # print(df["Type of Admission"].value_counts())
     df_copy_test = df_copy_test.replace(['Trauma'], '0')
     df_copy_test = df_copy_test.replace(['Emergency'], '1')
     df_copy_test = df_copy_test.replace(['Urgent'], '2')
-    print(df_copy_test["Type of Admission"].value_counts())
+    # print(df_copy_test["Type of Admission"].value_counts())
 
     # 0 -> 41-50 / 1 -> 31-40 / 2 -> 51-60 / 3 -> 21-30 / 4 -> 71-80 / 5 -> 61-70
     # / 6 -> 11-20 / 7 -> 81-90 / 8 -> 0-10 / 9 -> 91-100
@@ -64,7 +66,7 @@ def validation(self):
 
     # 0 -> 21-30 / 1 -> 11-20 / 2 -> 31-40 / 3 -> 51-60 / 4 -> 0-10 / 5 -> 41-50
     # 6 -> 71-80 / 7 -> More than 100 Days /  8 -> 81-90 / 9 -> 91-100 / 10 -> 61-70
-    print(df["Stay"].value_counts())
+    # print(df["Stay"].value_counts())
     df_copy_test = df_copy_test.replace(['21-30'], '0')
     df_copy_test = df_copy_test.replace(['11-20'], '1')
     df_copy_test = df_copy_test.replace(['31-40'], '2')
@@ -76,43 +78,60 @@ def validation(self):
     df_copy_test = df_copy_test.replace(['81-90'], '8')
     df_copy_test = df_copy_test.replace(['91-100'], '9')
     df_copy_test = df_copy_test.replace(['61-70'], '10')
-    print(df_copy_test["Stay"].value_counts())
+    # print(df_copy_test["Stay"].value_counts())
 
     x_train = df_copy_test[
         ["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission"]]
     y_train = df_copy_test["Stay"].values
 
-    print("TEST DATA")
-    print(df_test.dtypes)
+    ## FEATURE EXTRACTION
+    options_sol = ['2']
+    rslt_df = df_copy_test.loc[df_copy_test['Severity of Illness'].isin(options_sol)]
+    print('\nResult Severity of Illness :\n',
+          rslt_df)
+
+    options_age = ['4', '5', '7', '9']
+    rslt_df_age = df_copy_test.loc[df_copy_test['Age'].isin(options_age)]
+    print('\nResult Age :\n',
+          rslt_df_age)
+
+    df_feature_ext = df_copy_test.copy()
+    common = rslt_df.merge(rslt_df_age, on=["Severity of Illness", "Age"])
+
+    print("merged two column : ", common)
+
+    # print("TEST DATA")
+    # print(df_test.dtypes)
     ## feature selection
-    df_copy_test_data = df_test[["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission"]].copy()
+    df_copy_test_data = df_test[
+        ["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission"]].copy()
 
     # 0 ->  gynecology / 1 -> anesthesia / 2-> radiotherapy / 3 -> TB & Chest disease / 4 -> surgery
-    print(df_test["Department"].value_counts())
+    # print(df_test["Department"].value_counts())
     df_copy_test_data = df_copy_test_data.replace(['gynecology'], '0')
     df_copy_test_data = df_copy_test_data.replace(['anesthesia'], '1')
     df_copy_test_data = df_copy_test_data.replace(['radiotherapy'], '2')
     df_copy_test_data = df_copy_test_data.replace(['TB & Chest disease'], '3')
     df_copy_test_data = df_copy_test_data.replace(['surgery'], '4')
-    print(df_copy_test_data["Department"].value_counts())
+    # print(df_copy_test_data["Department"].value_counts())
 
     # 0 -> Moderate / 1 -> Minor / 2 -> Extreme / 3 -> Severity of Illness
-    print(df_test["Severity of Illness"].value_counts())
+    # print(df_test["Severity of Illness"].value_counts())
     df_copy_test_data = df_copy_test_data.replace(['Moderate'], '0')
     df_copy_test_data = df_copy_test_data.replace(['Minor'], '1')
     df_copy_test_data = df_copy_test_data.replace(['Extreme'], '2')
-    print(df_copy_test_data["Severity of Illness"].value_counts())
+    # print(df_copy_test_data["Severity of Illness"].value_counts())
 
     # 0 -> Trauma / 1 -> Emergency / 2 -> Urgent
-    print(df_test["Type of Admission"].value_counts())
+    # print(df_test["Type of Admission"].value_counts())
     df_copy_test_data = df_copy_test_data.replace(['Trauma'], '0')
     df_copy_test_data = df_copy_test_data.replace(['Emergency'], '1')
     df_copy_test_data = df_copy_test_data.replace(['Urgent'], '2')
-    print(df_copy_test_data["Type of Admission"].value_counts())
+    # print(df_copy_test_data["Type of Admission"].value_counts())
 
     # 0 -> 41-50 / 1 -> 31-40 / 2 -> 51-60 / 3 -> 21-30 / 4 -> 71-80 / 5 -> 61-70
     # / 6 -> 11-20 / 7 -> 81-90 / 8 -> 0-10 / 9 -> 91-100
-    print(df_test["Age"].value_counts())
+    # print(df_test["Age"].value_counts())
     df_copy_test_data = df_copy_test_data.replace(['41-50'], '0')
     df_copy_test_data = df_copy_test_data.replace(['31-40'], '1')
     df_copy_test_data = df_copy_test_data.replace(['51-60'], '2')
@@ -123,7 +142,7 @@ def validation(self):
     df_copy_test_data = df_copy_test_data.replace(['81-90'], '7')
     df_copy_test_data = df_copy_test_data.replace(['0-10'], '8')
     df_copy_test_data = df_copy_test_data.replace(['91-100'], '9')
-    print(df_copy_test_data["Age"].value_counts())
+    # print(df_copy_test_data["Age"].value_counts())
 
     x_test = df_copy_test_data[
         ["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission"]]
@@ -164,7 +183,6 @@ def validation(self):
     print("Accuracy: %.2f%%" % (accuracy * 100.0))
     print('\n' + "Confusion Matrix: " + '\n', confusion_matrix(y_val, prediction))
 
-
     # Training Dataset
     column_name = ['Hospital_code', 'patientid', 'Department',
                    'Age', 'Severity of Illness', 'Type of Admission']
@@ -175,6 +193,6 @@ def validation(self):
     y = np.array([50, 200, 1000, 1500, 2000, 2500])
 
     plt.bar(x, y)
-    #plt.show()
+    # plt.show()
 
     return df
