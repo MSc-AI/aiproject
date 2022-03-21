@@ -96,9 +96,9 @@ def validation(self):
           rslt_df_age)
 
     df_feature_ext = df_copy_test.copy()
-    common = rslt_df.merge(rslt_df_age, on=["Severity of Illness", "Age"])
-
-    print("merged two column : ", common)
+    common = rslt_df.merge(rslt_df_age, left_index = True, right_index = True, how = 'outer' ,suffixes=('', '_y'))
+    common.drop(common.filter(regex='_y$').columns.tolist(),axis=1, inplace=True)
+    print("merged two column : ", common["Stay"])
 
     # print("TEST DATA")
     # print(df_test.dtypes)
