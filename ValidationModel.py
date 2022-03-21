@@ -20,10 +20,9 @@ def validation(self):
     df_test = ReadCSV.FileOperations.read_test_file(self)
 
 
-
+    ## feature selection
     print(df.dtypes)
-    df_copy_test = df.copy()
-
+    df_copy_test = df[["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission", "Stay"]].copy()
     print("TRAIN DATA")
     # 0 ->  gynecology / 1 -> anesthesia / 2-> radiotherapy / 3 -> TB & Chest disease / 4 -> surgery
     print(df["Department"].value_counts())
@@ -85,7 +84,8 @@ def validation(self):
 
     print("TEST DATA")
     print(df_test.dtypes)
-    df_copy_test_data = df_test.copy()
+    ## feature selection
+    df_copy_test_data = df_test[["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission"]].copy()
 
     # 0 ->  gynecology / 1 -> anesthesia / 2-> radiotherapy / 3 -> TB & Chest disease / 4 -> surgery
     print(df_test["Department"].value_counts())
@@ -165,7 +165,7 @@ def validation(self):
     print('\n' + "Confusion Matrix: " + '\n', confusion_matrix(y_val, prediction))
 
 
-    # Creating the dataset
+    # Training Dataset
     column_name = ['Hospital_code', 'patientid', 'Department',
                    'Age', 'Severity of Illness', 'Type of Admission']
 
@@ -175,6 +175,6 @@ def validation(self):
     y = np.array([50, 200, 1000, 1500, 2000, 2500])
 
     plt.bar(x, y)
-    # plt.show()
+    #plt.show()
 
     return df
