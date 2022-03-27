@@ -99,8 +99,9 @@ def validation(self):
           rslt_df_age)
 
     df_feature_ext = df_copy_test.copy()
-    common = rslt_df.merge(rslt_df_age, left_index=True, right_index=True, how='inner', suffixes=('', '_y'))
-    common.drop(common.filter(regex='_y$').columns.tolist(), axis=1, inplace=True)
+    print("rslt_df size:" + str(rslt_df.shape))
+    common = rslt_df.merge(rslt_df_age, left_index=True, right_index=True, how='outer', suffixes=('', '_drop'))
+    common.drop(common.filter(regex='_y$').columns.tolist(), axis=1, inplace=False)
     print("merged two column : ", common["Stay"])
     print(common.isnull().sum())
     common.loc[common["Hospital_code"].isnull(), "Hospital_code"] = "0"
@@ -112,16 +113,25 @@ def validation(self):
     common.loc[common["Stay"].isnull(), "Stay"] = "0"
     print(common.isnull().sum())
 
-    f = open("new_train.csv", "w")
+    f = open("train_join.csv", "w")
     print("File has been created!")
     for (i, row) in common.iterrows():
         if common["Hospital_code"][i] == "0" and common["patientid"][i] == "0" and common["Department"][i] == "0" and common["Age"][i] == "0" and common["Severity of Illness"][i] == "0" and common["Type of Admission"][i] == "0" and common["Stay"][i] == "0":
+            row["Hospital_code"] = df_copy_test["Hospital_code"][i]
+            row["patientid"] = df_copy_test["patientid"][i]
+            row["Department"] = df_copy_test["Department"][i]
+            row["Age"] = df_copy_test["Age"][i]
+            row["Severity of Illness"] = df_copy_test["Severity of Illness"][i]
+            row["Type of Admission"] = df_copy_test["Type of Admission"][i]
+            row["Stay"] = df_copy_test["Stay"][i]
+
             row["priority"] = "NO"
 
         else:
             row["priority"] = "YES"
+
         f.write(str(row["Hospital_code"]) + "," + str(row["patientid"]) + "," + str(row["Department"]) + "," + str(row["Age"]) + "," + str(row["Severity of Illness"]) + "," + str(row["Type of Admission"]) + "," + str(row["Stay"]) + "," + str(row["priority"]) + "\n")
-    file = open("new_train.csv", "r")
+    file = open("train_join.csv", "r")
     df_common = pd.read_csv(file)
     print(df_common.iloc[0:10])
     print(df_common.shape)
