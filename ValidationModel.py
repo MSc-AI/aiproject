@@ -116,7 +116,9 @@ def validation(self):
     f = open("train_join.csv", "w")
     print("File has been created!")
     for (i, row) in common.iterrows():
-        if common["Hospital_code"][i] == "0" and common["patientid"][i] == "0" and common["Department"][i] == "0" and common["Age"][i] == "0" and common["Severity of Illness"][i] == "0" and common["Type of Admission"][i] == "0" and common["Stay"][i] == "0":
+        if common["Hospital_code"][i] == "0" and common["patientid"][i] == "0" and common["Department"][i] == "0" and \
+                common["Age"][i] == "0" and common["Severity of Illness"][i] == "0" and common["Type of Admission"][
+            i] == "0" and common["Stay"][i] == "0":
             row["Hospital_code"] = df_copy_test["Hospital_code"][i]
             row["patientid"] = df_copy_test["patientid"][i]
             row["Department"] = df_copy_test["Department"][i]
@@ -130,12 +132,15 @@ def validation(self):
         else:
             row["priority"] = "YES"
 
-        f.write(str(row["Hospital_code"]) + "," + str(row["patientid"]) + "," + str(row["Department"]) + "," + str(row["Age"]) + "," + str(row["Severity of Illness"]) + "," + str(row["Type of Admission"]) + "," + str(row["Stay"]) + "," + str(row["priority"]) + "\n")
+        f.write(str(row["Hospital_code"]) + "," + str(row["patientid"]) + "," + str(row["Department"]) + "," + str(
+            row["Age"]) + "," + str(row["Severity of Illness"]) + "," + str(row["Type of Admission"]) + "," + str(
+            row["Stay"]) + "," + str(row["priority"]) + "," + str(row["Stay"]) + "\n")
     file = open("train_join.csv", "r")
     df_common = pd.read_csv(file)
+
     print(df_common.iloc[0:10])
     print(df_common.shape)
-    print("null values",df_common.isnull().sum().sum())
+    print("null values", df_common.isnull().sum().sum())
     f.close()
 
     # common.dropna(inplace=True)
@@ -199,6 +204,7 @@ def validation(self):
 
     prediction = dt.predict(x_test)
     accuracy = accuracy_score(y_train, prediction)
+    print("TEST DATA")
     print("Accuracy: %.2f%%" % (accuracy * 100.0))
     print('\n' + "Confusion Matrix: " + '\n', confusion_matrix(y_train, prediction))
     # print("Report :" + '\n', classification_report(y_train, prediction))
@@ -212,9 +218,40 @@ def validation(self):
     # print("Accuracy: %.2f%%" % (accuracy * 100.0))
     # print('\n' + "Confusion Matrix: " + '\n', confusion_matrix(valid['Stay'], valid['prediction']))
     accuracy = accuracy_score(y_val, prediction)
+    print("TRAIN DATA")
     print("Accuracy: %.2f%%" % (accuracy * 100.0))
     print('\n' + "Confusion Matrix: " + '\n', confusion_matrix(y_val, prediction))
     # print("Report :" + '\n', classification_report(y_val, prediction))
+    print("\r\n_______________________________________________________\r\n")
+    print("\r\n_______________________________________________________\r\n")
+    print(df_common.shape)
+    x_train = df_common[df_common.columns[0:7].values]
+    print("x_train: ", x_train.shape)
+    #TODO: check if this is correct
+    y_train = df_common.loc[0:]
+    print("y_train: ", y_train.shape)
+    dt = DecisionTreeClassifier(criterion="entropy", random_state=1234, max_depth=4, min_samples_split=4)
+    model = dt.fit(x_train, y_train)
+
+    # %25 validation data
+    x_train, x_val, y_train, y_val = train_test_split(x_train, y_train,
+                                                      test_size=0.25,
+                                                      shuffle=False)
+
+    y_train = y_train[0:len(x_test):]
+
+    prediction = dt.predict(x_test)
+    accuracy = accuracy_score(y_train, prediction)
+    print("FEATURE EXTRACTION")
+    print("Accuracy: %.2f%%" % (accuracy * 100.0))
+    print('\n' + "Confusion Matrix: " + '\n', confusion_matrix(y_train, prediction))
+    # print("Report :" + '\n', classification_report(y_train, prediction))
+
+    print(model)
+
+    # validation process
+    prediction = dt.predict(x_val)
+
     # Training Dataset
     column_name = ['Hospital_code', 'patientid', 'Department',
                    'Age', 'Severity of Illness', 'Type of Admission']
