@@ -127,14 +127,16 @@ def validation(self):
             row["Type of Admission"] = df_copy_test["Type of Admission"][i]
             row["Stay"] = df_copy_test["Stay"][i]
 
-            row["priority"] = "NO"
+            # row["priority"] = "NO"
+            row["priority"] = "0"
 
         else:
-            row["priority"] = "YES"
+            # row["priority"] = "YES"
+            row["priority"] = "1"
 
         f.write(str(row["Hospital_code"]) + "," + str(row["patientid"]) + "," + str(row["Department"]) + "," + str(
-            row["Age"]) + "," + str(row["Severity of Illness"]) + "," + str(row["Type of Admission"]) + "," + str(
-            row["Stay"]) + "," + str(row["priority"]) + "," + str(row["Stay"]) + "\n")
+            row["Age"]) + "," + str(row["Severity of Illness"]) + "," + str(row["Type of Admission"]) + "," +
+                str(row["priority"]) + "," + str(row["Stay"]) + "\n")
     file = open("train_join.csv", "r")
     df_common = pd.read_csv(file)
 
@@ -225,11 +227,80 @@ def validation(self):
     print("\r\n_______________________________________________________\r\n")
     print("\r\n_______________________________________________________\r\n")
     print(df_common.shape)
-    x_train = df_common[df_common.columns[0:7].values]
+
+
+
+    ## FEATURE EXTRACTION
+    options_sol = ['2']
+    rslt_df_test = df_copy_test_data.loc[df_copy_test_data['Severity of Illness'].isin(options_sol)]
+    print('\nResult Severity of Illness :\n',
+          rslt_df_test)
+
+    options_age = ['4', '5', '7', '9']
+    rslt_df_test_age = df_copy_test_data.loc[df_copy_test['Age'].isin(options_age)]
+    print('\nResult Age :\n',
+          rslt_df_test_age)
+
+
+    df_feature_ext = df_copy_test_data.copy()
+    print("rslt_df size:" + str(rslt_df.shape))
+    common = rslt_df_test.merge(rslt_df_test_age, left_index=True, right_index=True, how='outer', suffixes=('', '_drop'))
+    common.drop(common.filter(regex='_y$').columns.tolist(), axis=1, inplace=False)
+
+    print(common.isnull().sum())
+    common.loc[common["Hospital_code"].isnull(), "Hospital_code"] = "0"
+    common.loc[common["patientid"].isnull(), "patientid"] = "0"
+    common.loc[common["Department"].isnull(), "Department"] = "0"
+    common.loc[common["Age"].isnull(), "Age"] = "0"
+    common.loc[common["Severity of Illness"].isnull(), "Severity of Illness"] = "0"
+    common.loc[common["Type of Admission"].isnull(), "Type of Admission"] = "0"
+    print(common.isnull().sum())
+
+    f = open("test_join.csv", "w")
+    for (i, row) in common.iterrows():
+        if common["Hospital_code"][i] == "0" and common["patientid"][i] == "0" and common["Department"][i] == "0" and \
+                common["Age"][i] == "0" and common["Severity of Illness"][i] == "0" and common["Type of Admission"][i] == "0":
+            row["Hospital_code"] = df_copy_test["Hospital_code"][i]
+            row["patientid"] = df_copy_test["patientid"][i]
+            row["Department"] = df_copy_test["Department"][i]
+            row["Age"] = df_copy_test["Age"][i]
+            row["Severity of Illness"] = df_copy_test["Severity of Illness"][i]
+            row["Type of Admission"] = df_copy_test["Type of Admission"][i]
+
+            # row["priority"] = "NO"
+            row["priority"] = "0"
+
+        else:
+            # row["priority"] = "YES"
+            row["priority"] = "1"
+
+        f.write(str(row["Hospital_code"]) + "," + str(row["patientid"]) + "," + str(row["Department"]) + "," + str(
+            row["Age"]) + "," + str(row["Severity of Illness"]) + "," + str(row["Type of Admission"]) + ","
+                + str(row["priority"])+ "\n")
+    file_test = open("test_join.csv", "r")
+    df_test_common = pd.read_csv(file_test)
+    print(df_test_common.columns.values)
+    print("isa::: ",df_test_common.iloc[:,1])
+    print(df_common.columns.values)
+    df_train_patientid = df_common.iloc[:, 1]
+    df_train_age = df_common.iloc[:, 3]
+    df_train_severity = df_common.iloc[:, 4]
+    df_train_priority = df_common.iloc[:, 6]
+    df_train_stay = df_common.iloc[:, 7]
+
+    df_test_patientid = df_test_common.iloc[:,1]
+    df_test_age = df_test_common.iloc[:,3]
+    df_test_severity = df_test_common.iloc[:,4]
+    df_test_priority = df_test_common.iloc[:,6]
+
+    x_train = df_common.iloc[:,0:6]
+    #df_common[df_common.columns[1, 3, 4, 6]]
     print("x_train: ", x_train.shape)
-    #TODO: check if this is correct
-    y_train = df_common.loc[0:]
+    y_train = df_common.iloc[:,7]
+    #df_common[df_common.columns[7]]
     print("y_train: ", y_train.shape)
+    x_test = df_test_common.iloc[:,0:6]
+    #df_test_common[df_test_common.columns[1, 3, 4, 6]]
     dt = DecisionTreeClassifier(criterion="entropy", random_state=1234, max_depth=4, min_samples_split=4)
     model = dt.fit(x_train, y_train)
 
