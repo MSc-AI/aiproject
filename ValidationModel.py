@@ -82,7 +82,9 @@ def validation(self):
     df_copy_test = df_copy_test.replace(['91-100'], '9')
     df_copy_test = df_copy_test.replace(['61-70'], '10')
     # print(df_copy_test["Stay"].value_counts())
-
+    print("\r\n_______________________________________________________\r\n")
+    print("TRAIN DATA ALGORITHM")
+    print("\r\n_______________________________________________________\r\n")
     x_train = df_copy_test[
         ["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission"]]
     y_train = df_copy_test["Stay"].values
@@ -144,7 +146,9 @@ def validation(self):
     print(df_common.shape)
     print("null values", df_common.isnull().sum().sum())
     f.close()
-
+    print("\r\n_______________________________________________________\r\n")
+    print("TRAIN DATA ALGORITHM -END ")
+    print("\r\n_______________________________________________________\r\n")
     # common.dropna(inplace=True)
 
     # print("TEST DATA")
@@ -191,6 +195,9 @@ def validation(self):
     df_copy_test_data = df_copy_test_data.replace(['91-100'], '9')
     # print(df_copy_test_data["Age"].value_counts())
 
+    print("\r\n_______________________________________________________\r\n")
+    print("TEST DATA ALGORITHM")
+    print("\r\n_______________________________________________________\r\n")
     x_test = df_copy_test_data[
         ["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission"]]
 
@@ -224,13 +231,19 @@ def validation(self):
     print("Accuracy: %.2f%%" % (accuracy * 100.0))
     print('\n' + "Confusion Matrix: " + '\n', confusion_matrix(y_val, prediction))
     # print("Report :" + '\n', classification_report(y_val, prediction))
+
     print("\r\n_______________________________________________________\r\n")
+    print("TEST DATA ALGORITHM - END")
+    print("\r\n_______________________________________________________\r\n")
+
+    print("\r\n_______________________________________________________\r\n")
+    print("FEATURE EXTRACTION ALGORTIHM")
     print("\r\n_______________________________________________________\r\n")
     print(df_common.shape)
 
 
 
-    ## FEATURE EXTRACTION
+    ## FEATURE EXTRACTION ALGORTIHM
     options_sol = ['2']
     rslt_df_test = df_copy_test_data.loc[df_copy_test_data['Severity of Illness'].isin(options_sol)]
     print('\nResult Severity of Illness :\n',
@@ -243,18 +256,18 @@ def validation(self):
 
 
     df_feature_ext = df_copy_test_data.copy()
-    print("rslt_df size:" + str(rslt_df.shape))
+    # print("rslt_df size:" + str(rslt_df.shape))
     common = rslt_df_test.merge(rslt_df_test_age, left_index=True, right_index=True, how='outer', suffixes=('', '_drop'))
     common.drop(common.filter(regex='_y$').columns.tolist(), axis=1, inplace=False)
 
-    print(common.isnull().sum())
+    # print(common.isnull().sum())
     common.loc[common["Hospital_code"].isnull(), "Hospital_code"] = "0"
     common.loc[common["patientid"].isnull(), "patientid"] = "0"
     common.loc[common["Department"].isnull(), "Department"] = "0"
     common.loc[common["Age"].isnull(), "Age"] = "0"
     common.loc[common["Severity of Illness"].isnull(), "Severity of Illness"] = "0"
     common.loc[common["Type of Admission"].isnull(), "Type of Admission"] = "0"
-    print(common.isnull().sum())
+    # print(common.isnull().sum())
 
     f = open("test_join.csv", "w")
     for (i, row) in common.iterrows():
@@ -279,49 +292,37 @@ def validation(self):
                 + str(row["priority"])+ "\n")
     file_test = open("test_join.csv", "r")
     df_test_common = pd.read_csv(file_test)
-    print(df_test_common.columns.values)
-    print("isa::: ",df_test_common.iloc[:,1])
-    print(df_common.columns.values)
-    df_train_patientid = df_common.iloc[:, 1]
-    df_train_age = df_common.iloc[:, 3]
-    df_train_severity = df_common.iloc[:, 4]
-    df_train_priority = df_common.iloc[:, 6]
-    df_train_stay = df_common.iloc[:, 7]
+    x_train_feat = df_common.iloc[:,0:6]
+    print("x_train: ", x_train_feat.shape)
+    y_train_feat = df_common.iloc[:,7]
+    print("y_train: ", y_train_feat.shape)
+    x_test_feat = df_test_common.iloc[:,0:6]
 
-    df_test_patientid = df_test_common.iloc[:,1]
-    df_test_age = df_test_common.iloc[:,3]
-    df_test_severity = df_test_common.iloc[:,4]
-    df_test_priority = df_test_common.iloc[:,6]
-
-    x_train = df_common.iloc[:,0:6]
-    #df_common[df_common.columns[1, 3, 4, 6]]
-    print("x_train: ", x_train.shape)
-    y_train = df_common.iloc[:,7]
-    #df_common[df_common.columns[7]]
-    print("y_train: ", y_train.shape)
-    x_test = df_test_common.iloc[:,0:6]
-    #df_test_common[df_test_common.columns[1, 3, 4, 6]]
     dt = DecisionTreeClassifier(criterion="entropy", random_state=1234, max_depth=4, min_samples_split=4)
-    model = dt.fit(x_train, y_train)
+    model = dt.fit(x_train_feat, y_train_feat)
 
     # %25 validation data
-    x_train, x_val, y_train, y_val = train_test_split(x_train, y_train,
+    x_train_feat, x_val_test, y_train_feat, y_val_test = train_test_split(x_train_feat, y_train_feat,
                                                       test_size=0.25,
                                                       shuffle=False)
 
-    y_train = y_train[0:len(x_test):]
+    y_train_feat = y_train_feat[0:len(x_test_feat):]
 
-    prediction = dt.predict(x_test)
-    accuracy = accuracy_score(y_train, prediction)
+    prediction = dt.predict(x_test_feat)
+    accuracy = accuracy_score(y_train_feat, prediction)
     print("FEATURE EXTRACTION")
     print("Accuracy: %.2f%%" % (accuracy * 100.0))
-    print('\n' + "Confusion Matrix: " + '\n', confusion_matrix(y_train, prediction))
+    print('\n' + "Confusion Matrix: " + '\n', confusion_matrix(y_train_feat, prediction))
     # print("Report :" + '\n', classification_report(y_train, prediction))
 
-    print(model)
 
     # validation process
-    prediction = dt.predict(x_val)
+    prediction = dt.predict(x_val_test)
+
+    print("\r\n_______________________________________________________\r\n")
+    print("FEATURE EXTRACTION ALGORTIHM -END")
+    print("\r\n_______________________________________________________\r\n")
+
 
     # Training Dataset
     column_name = ['Hospital_code', 'patientid', 'Department',
