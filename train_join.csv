@@ -1,3 +1,4 @@
+Hospital_code,patientid,Department,Age,Severity of Illness,Type of Admission,priority,Stay
 8.0,31397.0,2,2,2,1,1,8
 2.0,31397.0,2,2,2,0,1,0
 10.0,31397.0,1,2,2,0,1,1

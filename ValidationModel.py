@@ -1,9 +1,12 @@
 import numpy as np
-from pandas import DataFrame
 from self import self
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
+from six import StringIO
+from IPython.display import Image
+from sklearn.tree import export_graphviz
+import pydotplus
 import pandas as pd
 import matplotlib.pyplot as plt
 import ReadCSV
@@ -81,6 +84,7 @@ def feature_selection():
     # print(df_copy_test["Stay"].value_counts())
     return df_copy_test
 
+
 def feature_extraction():
     df_copy_test = feature_selection()
     options_sol = ['2']
@@ -109,6 +113,7 @@ def feature_extraction():
     print(common.isnull().sum())
 
     f = open("train_join.csv", "w")
+    f.write("Hospital_code,patientid,Department,Age,Severity of Illness,Type of Admission,priority,Stay\n")
     print("File has been created!")
     for (i, row) in common.iterrows():
         if common["Hospital_code"][i] == "0" and common["patientid"][i] == "0" and common["Department"][i] == "0" and \
@@ -141,8 +146,8 @@ def feature_extraction():
     f.close()
     return df_common
 
-def feature_selection_test():
 
+def feature_selection_test():
     df_copy_test_data = df_test[
         ["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission"]].copy()
 
@@ -184,12 +189,15 @@ def feature_selection_test():
     df_copy_test_data = df_copy_test_data.replace(['91-100'], '9')
     # print(df_copy_test_data["Age"].value_counts())
     return df_copy_test_data
+
+
 def validation(self):
     df_copy_test = feature_selection()
 
     x_train = df_copy_test[
         ["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission"]]
-    y_train = df_copy_test["Stay"].values
+    y_train = df_copy_test[["Stay"]]
+
 
     df_common = feature_extraction()
     df_copy_test_data = feature_selection_test()
@@ -230,7 +238,6 @@ def validation(self):
     # print("Report :" + '\n', classification_report(y_val, prediction))
     print("\r\n____________________________________________________\r\n")
 
-
     ## FEATURE EXTRACTION ALGORTIHM
     options_sol = ['2']
     rslt_df_test = df_copy_test_data.loc[df_copy_test_data['Severity of Illness'].isin(options_sol)]
@@ -253,9 +260,11 @@ def validation(self):
     # print(common.isnull().sum())
 
     f = open("test_join.csv", "w")
+    f.write("Hospital_code,patientid,Department,Age,Severity of Illness,Type of Admission,priority\n")
     for (i, row) in common.iterrows():
         if common["Hospital_code"][i] == "0" and common["patientid"][i] == "0" and common["Department"][i] == "0" and \
-                common["Age"][i] == "0" and common["Severity of Illness"][i] == "0" and common["Type of Admission"][i] == "0":
+                common["Age"][i] == "0" and common["Severity of Illness"][i] == "0" and common["Type of Admission"][
+            i] == "0":
             row["Hospital_code"] = df_copy_test["Hospital_code"][i]
             row["patientid"] = df_copy_test["patientid"][i]
             row["Department"] = df_copy_test["Department"][i]
@@ -275,11 +284,11 @@ def validation(self):
                 + str(row["priority"]) + "\n")
     file_test = open("test_join.csv", "r")
     df_test_common = pd.read_csv(file_test)
-    x_train_feat = df_common.iloc[:, 0:6]
+    x_train_feat = df_common[["Hospital_code", "patientid", "Department", "Age", "Severity of Illness","Type of Admission","priority"]]
     print("x_train: ", x_train_feat.shape)
-    y_train_feat = df_common.iloc[:, 7]
+    y_train_feat = df_common[["Stay"]]
     print("y_train: ", y_train_feat.shape)
-    x_test_feat = df_test_common.iloc[:, 0:6]
+    x_test_feat = df_test_common[["Hospital_code", "patientid", "Department", "Age", "Severity of Illness","Type of Admission","priority"]]
 
     dt = DecisionTreeClassifier(criterion="entropy", random_state=1234, max_depth=4, min_samples_split=4)
     model = dt.fit(x_train_feat, y_train_feat)
@@ -292,21 +301,39 @@ def validation(self):
 
     y_train_feat = y_train_feat[0:len(x_test_feat):]
 
-    prediction = dt.predict(x_test_feat)
-    accuracy = accuracy_score(y_train_feat, prediction)
+    prediction_ = dt.predict(x_test_feat)
+    accuracy = accuracy_score(y_train_feat, prediction_)
     print("\r\n____________________________________________________\r\n")
     print("FEATURE EXTRACTION ALGORTIHM")
     print("\r\n____________________________________________________\r\n")
     print("Accuracy: %.2f%%" % (accuracy * 100.0))
-    print('\n' + "Confusion Matrix: " + '\n', confusion_matrix(y_train_feat, prediction))
+    print('\n' + "Confusion Matrix: " + '\n', confusion_matrix(y_train_feat, prediction_))
     # print("Report :" + '\n', classification_report(y_train_feat, prediction))
     print("\r\n____________________________________________________\r\n")
+
+    """dot_data = StringIO()
+    clf = model
+    feature_cols = df_common.rename(columns={df_common.iloc[:,0]: 'Hospital_code',
+                                              df_common.iloc[:,1]: 'patientid',
+                                              df_common.iloc[:,2]: 'Department',
+                                              df_common.iloc[:,3]: 'Age',
+                                              df_common.iloc[:,4]: 'Severity of Illness',
+                                              df_common.iloc[:,5]: 'Type of Admission',
+                                              df_common.iloc[:,6]: 'priority'})
+
+    class_col = df_common.rename(columns={df_common.iloc[:,7]: 'Stay'})
+    export_graphviz(clf, out_file=dot_data,
+                    filled=True, rounded=True,
+                    special_characters=True, feature_names=feature_cols, class_names=class_col)
+    graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
+    graph.write_png('illness.png')
+    Image(graph.create_png())"""
 
     # Training Dataset
     column_name = ['Hospital_code', 'patientid', 'Department',
                    'Age', 'Severity of Illness', 'Type of Admission']
 
-    data = x_train
+
     x = np.hstack(x_train)
     y = np.array([50, 200, 1000, 1500, 2000, 2500])
 
