@@ -3,10 +3,7 @@ from self import self
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
-from six import StringIO
-from IPython.display import Image
-from sklearn.tree import export_graphviz
-import pydotplus
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import ReadCSV
@@ -198,27 +195,23 @@ def validation(self):
         ["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission"]]
     y_train = df_copy_test[["Stay"]]
 
-
     df_common = feature_extraction()
     df_copy_test_data = feature_selection_test()
 
-    x_test = df_copy_test_data[
-        ["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission"]]
 
-    dt = DecisionTreeClassifier(criterion="entropy", random_state=1234, max_depth=4, min_samples_split=4)
+    dt = DecisionTreeClassifier()
     model = dt.fit(x_train, y_train)
 
     # %25 validation data
     x_train, x_val, y_train, y_val = train_test_split(x_train, y_train,
-                                                      test_size=0.25,
-                                                      shuffle=False)
+                                                      test_size=0.40, shuffle=False)
 
-    y_train = y_train[0:len(x_test):]
+    # y_train = y_train[0:len(x_test):]
 
-    prediction = dt.predict(x_test)
+    prediction = dt.predict(x_train)
     accuracy = accuracy_score(y_train, prediction)
     print("\r\n____________________________________________________\r\n")
-    print("TEST DATA")
+    print("TRAIN DATA")
     print("\r\n____________________________________________________\r\n")
     print("Accuracy: %.2f%%" % (accuracy * 100.0))
     print('\n' + "Confusion Matrix: " + '\n', confusion_matrix(y_train, prediction))
@@ -231,7 +224,7 @@ def validation(self):
 
     accuracy = accuracy_score(y_val, prediction)
     print("\r\n____________________________________________________\r\n")
-    print("TRAIN DATA")
+    print("TRAIN VALIDATION DATA")
     print("\r\n____________________________________________________\r\n")
     print("Accuracy: %.2f%%" % (accuracy * 100.0))
     print('\n' + "Confusion Matrix: " + '\n', confusion_matrix(y_val, prediction))
@@ -284,24 +277,26 @@ def validation(self):
                 + str(row["priority"]) + "\n")
     file_test = open("test_join.csv", "r")
     df_test_common = pd.read_csv(file_test)
-    x_train_feat = df_common[["Hospital_code", "patientid", "Department", "Age", "Severity of Illness","Type of Admission","priority"]]
+    x_train_feat = df_common[
+        ["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission", "priority"]]
     print("x_train: ", x_train_feat.shape)
     y_train_feat = df_common[["Stay"]]
     print("y_train: ", y_train_feat.shape)
-    x_test_feat = df_test_common[["Hospital_code", "patientid", "Department", "Age", "Severity of Illness","Type of Admission","priority"]]
+    x_test_feat = df_test_common[
+        ["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission", "priority"]]
 
-    dt = DecisionTreeClassifier(criterion="entropy", random_state=1234, max_depth=4, min_samples_split=4)
+    dt = DecisionTreeClassifier()
     model = dt.fit(x_train_feat, y_train_feat)
     print(model)
 
     # %25 validation data
     x_train_feat, x_val_test, y_train_feat, y_val_test = train_test_split(x_train_feat, y_train_feat,
-                                                                          test_size=0.25,
+                                                                          test_size=0.40,
                                                                           shuffle=False)
 
-    y_train_feat = y_train_feat[0:len(x_test_feat):]
+    # y_train_feat = y_train_feat[0:len(x_test_feat):]
 
-    prediction_ = dt.predict(x_test_feat)
+    prediction_ = dt.predict(x_train_feat)
     accuracy = accuracy_score(y_train_feat, prediction_)
     print("\r\n____________________________________________________\r\n")
     print("FEATURE EXTRACTION ALGORTIHM")
@@ -332,7 +327,6 @@ def validation(self):
     # Training Dataset
     column_name = ['Hospital_code', 'patientid', 'Department',
                    'Age', 'Severity of Illness', 'Type of Admission']
-
 
     x = np.hstack(x_train)
     y = np.array([50, 200, 1000, 1500, 2000, 2500])
