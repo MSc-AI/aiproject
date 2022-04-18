@@ -189,25 +189,38 @@ def feature_selection_test():
 
 
 def validation(self):
-    df_copy_test = feature_selection()
+    df_train = feature_selection()
+    df_test = feature_selection_test()
 
-    x_train = df_copy_test[
+    x_test = df_test[["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission"]]
+    x_train = df_train[
         ["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission"]]
-    y_train = df_copy_test[["Stay"]]
+    y_train = df_train[["Stay"]]
+    y_test = df_train[["Stay"]]
 
     df_common = feature_extraction()
     df_copy_test_data = feature_selection_test()
 
-
+    ## --------------TEST DATA-----------------
     dt = DecisionTreeClassifier()
-    model = dt.fit(x_train, y_train)
+    y_test = y_test[0:len(x_test):]
+    dt.fit(x_test, y_test)
+    prediction_ = dt.predict(x_test)
+    accuracy = accuracy_score(y_test, prediction_)
+    print("\r\n____________________________________________________\r\n")
+    print("TEST DATA")
+    print("\r\n____________________________________________________\r\n")
+    print("Accuracy: %.2f%%" % (accuracy * 100.0))
+    print('\n' + "Confusion Matrix: " + '\n', confusion_matrix(y_test, prediction_))
+    # print("Report :" + '\n', classification_report(y_train_feat, prediction))
+    print("\r\n______________________END______________________________\r\n")
 
-    # %25 validation data
+    ## --------------TRAIN DATA-----------------
+    dt.fit(x_train, y_train)
     x_train, x_val, y_train, y_val = train_test_split(x_train, y_train,
-                                                      test_size=0.40, shuffle=False)
+                                                      train_size=0.70, shuffle=False)
 
     # y_train = y_train[0:len(x_test):]
-
     prediction = dt.predict(x_train)
     accuracy = accuracy_score(y_train, prediction)
     print("\r\n____________________________________________________\r\n")
@@ -216,12 +229,11 @@ def validation(self):
     print("Accuracy: %.2f%%" % (accuracy * 100.0))
     print('\n' + "Confusion Matrix: " + '\n', confusion_matrix(y_train, prediction))
     # print("Report :" + '\n', classification_report(y_train, prediction))
-    print("\r\n____________________________________________________\r\n")
-    print(model)
+    print("\r\n______________________END______________________________\r\n")
 
-    # validation process
+
+    ## --------------VALIDATION DATA-----------------
     prediction = dt.predict(x_val)
-
     accuracy = accuracy_score(y_val, prediction)
     print("\r\n____________________________________________________\r\n")
     print("TRAIN VALIDATION DATA")
@@ -229,7 +241,7 @@ def validation(self):
     print("Accuracy: %.2f%%" % (accuracy * 100.0))
     print('\n' + "Confusion Matrix: " + '\n', confusion_matrix(y_val, prediction))
     # print("Report :" + '\n', classification_report(y_val, prediction))
-    print("\r\n____________________________________________________\r\n")
+    print("\r\n____________________END________________________________\r\n")
 
     ## FEATURE EXTRACTION ALGORTIHM
     options_sol = ['2']
@@ -237,7 +249,7 @@ def validation(self):
     # print('\nResult Severity of Illness :\n', rslt_df_test)
 
     options_age = ['4', '5', '7', '9']
-    rslt_df_test_age = df_copy_test_data.loc[df_copy_test['Age'].isin(options_age)]
+    rslt_df_test_age = df_copy_test_data.loc[df_train['Age'].isin(options_age)]
     # print('\nResult Age :\n', rslt_df_test_age)
 
     common = rslt_df_test.merge(rslt_df_test_age, left_index=True, right_index=True, how='outer',
@@ -258,12 +270,12 @@ def validation(self):
         if common["Hospital_code"][i] == "0" and common["patientid"][i] == "0" and common["Department"][i] == "0" and \
                 common["Age"][i] == "0" and common["Severity of Illness"][i] == "0" and common["Type of Admission"][
             i] == "0":
-            row["Hospital_code"] = df_copy_test["Hospital_code"][i]
-            row["patientid"] = df_copy_test["patientid"][i]
-            row["Department"] = df_copy_test["Department"][i]
-            row["Age"] = df_copy_test["Age"][i]
-            row["Severity of Illness"] = df_copy_test["Severity of Illness"][i]
-            row["Type of Admission"] = df_copy_test["Type of Admission"][i]
+            row["Hospital_code"] = df_train["Hospital_code"][i]
+            row["patientid"] = df_train["patientid"][i]
+            row["Department"] = df_train["Department"][i]
+            row["Age"] = df_train["Age"][i]
+            row["Severity of Illness"] = df_train["Severity of Illness"][i]
+            row["Type of Admission"] = df_train["Type of Admission"][i]
 
             # row["priority"] = "NO"
             row["priority"] = "0"
@@ -285,19 +297,18 @@ def validation(self):
     x_test_feat = df_test_common[
         ["Hospital_code", "patientid", "Department", "Age", "Severity of Illness", "Type of Admission", "priority"]]
 
-
+    ## Feture Extraction with test data
     dt = DecisionTreeClassifier()
-    model = dt.fit(x_train_feat, y_train_feat)
+    y_train_feat = y_train_feat[0:len(x_test_feat):]
+    model = dt.fit(x_test_feat, y_train_feat)
     print(model)
 
-    # %25 validation data
+    """# %25 validation data
     x_train_feat, x_val_test, y_train_feat, y_val_test = train_test_split(x_train_feat, y_train_feat,
-                                                                          test_size=0.40,
-                                                                          shuffle=False)
+                                                                          train_size=0.70,
+                                                                          shuffle=False)"""
 
-    # y_train_feat = y_train_feat[0:len(x_test_feat):]
-
-    prediction_ = dt.predict(x_train_feat)
+    prediction_ = dt.predict(x_test_feat)
     accuracy = accuracy_score(y_train_feat, prediction_)
     print("\r\n____________________________________________________\r\n")
     print("FEATURE EXTRACTION ALGORTIHM")
@@ -305,46 +316,7 @@ def validation(self):
     print("Accuracy: %.2f%%" % (accuracy * 100.0))
     print('\n' + "Confusion Matrix: " + '\n', confusion_matrix(y_train_feat, prediction_))
     # print("Report :" + '\n', classification_report(y_train_feat, prediction))
-    print("\r\n____________________________________________________\r\n")
-
-    dt = DecisionTreeClassifier()
-    y_train_feat = y_train_feat[0:len(x_test_feat):]
-    model = dt.fit(x_test_feat, y_train_feat)
-    print(model)
-
-    # %25 validation data
-    x_test_feat, x_val_test, y_train_feat, y_val_test = train_test_split(x_test_feat, y_train_feat,
-                                                                         test_size=0.40,
-                                                                         shuffle=False)
-
-    prediction_ = dt.predict(x_test_feat)
-    accuracy = accuracy_score(y_train_feat, prediction_)
-    print("\r\n____________________________________________________\r\n")
-    print("TEST DATA:")
-    print("\r\n____________________________________________________\r\n")
-    print("Accuracy: %.2f%%" % (accuracy * 100.0))
-    print('\n' + "Confusion Matrix: " + '\n', confusion_matrix(y_train_feat, prediction_))
-    # print("Report :" + '\n', classification_report(y_train_feat, prediction))
-    print("\r\n____________________________________________________\r\n")
-
-
-    """dot_data = StringIO()
-    clf = model
-    feature_cols = df_common.rename(columns={df_common.iloc[:,0]: 'Hospital_code',
-                                              df_common.iloc[:,1]: 'patientid',
-                                              df_common.iloc[:,2]: 'Department',
-                                              df_common.iloc[:,3]: 'Age',
-                                              df_common.iloc[:,4]: 'Severity of Illness',
-                                              df_common.iloc[:,5]: 'Type of Admission',
-                                              df_common.iloc[:,6]: 'priority'})
-
-    class_col = df_common.rename(columns={df_common.iloc[:,7]: 'Stay'})
-    export_graphviz(clf, out_file=dot_data,
-                    filled=True, rounded=True,
-                    special_characters=True, feature_names=feature_cols, class_names=class_col)
-    graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
-    graph.write_png('illness.png')
-    Image(graph.create_png())"""
+    print("\r\n___________________END_________________________________\r\n")
 
     # Training Dataset
     column_name = ['Hospital_code', 'patientid', 'Department',
@@ -357,3 +329,7 @@ def validation(self):
     # plt.show()
 
     return df
+
+
+
+
