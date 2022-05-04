@@ -1,16 +1,13 @@
-import numpy as np
 from self import self
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
-from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 
 import pandas as pd
-import matplotlib.pyplot as plt
-import ReadCSV
+
+from pycharm import ReadCSV
 
 """"
     Created by Software Engineer Isa Kulaksiz
@@ -113,7 +110,7 @@ def feature_extraction():
     common.loc[common["Stay"].isnull(), "Stay"] = "0"
     print(common.isnull().sum())
 
-    f = open("train_join.csv", "w")
+    f = open("../train_join.csv", "w")
     f.write("Hospital_code,patientid,Department,Age,Severity of Illness,Type of Admission,priority,Stay\n")
     print("File has been created!")
     for (i, row) in common.iterrows():
@@ -138,7 +135,7 @@ def feature_extraction():
         f.write(str(row["Hospital_code"]) + "," + str(row["patientid"]) + "," + str(row["Department"]) + "," + str(
             row["Age"]) + "," + str(row["Severity of Illness"]) + "," + str(row["Type of Admission"]) + "," +
                 str(row["priority"]) + "," + str(row["Stay"]) + "\n")
-    file = open("train_join.csv", "r")
+    file = open("../train_join.csv", "r")
     df_common = pd.read_csv(file)
 
     print(df_common.iloc[0:10])
