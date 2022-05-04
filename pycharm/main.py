@@ -4,8 +4,8 @@
 """
 import self as self
 
-import ValidationModel
-from ReadCSV import FileOperations
+from pycharm import ValidationModel
+from pycharm.ReadCSV import FileOperations
 
 if __name__ == '__main__':
     # print("************TEST DATA****************")
